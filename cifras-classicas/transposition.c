@@ -54,7 +54,7 @@ void print_table(void* _table, char* key, int qt_lines) {
 char* transposition(char* text, char* key) {
     int qt_lines = (int) ceil( (double)strlen(text) / strlen(key));
     char table[qt_lines][strlen(key)];
-    int pos_vector[strlen(key)];
+    int* pos_vector = NULL;
     int i, j, k = 0, menor, len = 0;
     char alpha = 'a';
     char* encrypted = NULL;
@@ -70,6 +70,21 @@ char* transposition(char* text, char* key) {
 
     print_table(table, key, qt_lines);
 
+    pos_vector = key_order(key);
+
+    for (i = 0; i < strlen(key); i++) {
+        for (j = 0; j < qt_lines; j++) {
+            encrypted = (char *)realloc(encrypted, sizeof(char)*(++len));
+            encrypted[len - 1] = table[j][pos_vector[i]];
+        }
+    }
+
+    return encrypted;
+}
+
+int* key_order(char* key) {
+    int pos_vector[strlen(key)];
+    int i, j, menor;
     for (i = 0; i < strlen(key); i++) {
         for (j = 0; j < strlen(key); j++) {
             if (j == 0)
@@ -81,15 +96,22 @@ char* transposition(char* text, char* key) {
         pos_vector[i] = menor;
         key[menor] = 126; //pra impedir que seja escolhido novamente como o menor
     }
+}
+
+char* decrypt(char* text, char* key) {
+    int i, j, k = 0;
+    int qt_lines = strlen(text)/strlen(key);
+    char table[qt_lines][strlen(key)];
+
+    int* pos_vector = key_order(key);
 
     for (i = 0; i < strlen(key); i++) {
         for (j = 0; j < qt_lines; j++) {
-            encrypted = (char *)realloc(encrypted, sizeof(char)*(++len));
-            encrypted[len - 1] = table[j][pos_vector[i]];
+            table[j][pos_vector[i]] = text[k++];
         }
     }
 
-    return encrypted;
+    print_table(table, key, qt_lines);
 }
 
 /*
