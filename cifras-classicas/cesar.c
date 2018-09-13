@@ -26,16 +26,16 @@
 
 enum Operation {Encrypt, Decrypt};
 
-char* caesar(char* cleartext, unsigned int shift, enum Operation op) {
+char* caesar(char* text, unsigned int shift, enum Operation op) {
     char* encrypted = NULL;
     char c;
     int i;
     
     if (op == Decrypt) shift = 0 - shift;
     
-    for (i = 0; i < strlen(cleartext); i++) {
+    for (i = 0; i < strlen(text); i++) {
         encrypted = (char *)realloc(encrypted, sizeof(char)*(i+1));
-        c = cleartext[i];
+        c = text[i];
         
         if (c >= 'a' && c <= 'z') {
             encrypted[i] = ((c - 'a') + shift) % 26 + 'a';
