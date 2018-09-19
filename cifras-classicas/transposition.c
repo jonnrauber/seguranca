@@ -24,6 +24,8 @@
 
 #define MAX_LEN 9999
 
+int* pos_vector = NULL;
+
 /*
  * Imprime a tabela de transposição.
  * */
@@ -47,15 +49,37 @@ void print_table(void* _table, char* key, int qt_lines) {
     }
 }
 
+int* key_order(char* key) {
+    int i, j, menor;
+    char* aux = NULL;
+    int* pos_vector = (int *)malloc(sizeof(int)*strlen(key));
+
+    aux = (char *)malloc(sizeof(char)*strlen(key));
+    strcpy(aux, key);
+    for (i = 0; i < strlen(aux); i++) {
+        for (j = 0; j < strlen(aux); j++) {
+            if (j == 0)
+                menor = j;
+            else
+                if (aux[j] < aux[menor])
+                    menor = j;
+        }
+        pos_vector[i] = menor;
+        aux[menor] = 126; //pra impedir que seja escolhido novamente como o menor
+    }
+    free(aux);
+
+    return pos_vector;
+}
+
 /*
  * Cifra de transposição.
  * Recebe um texto e uma chave e criptografa dispondo na tabela.
  * */
-char* transposition(char* text, char* key) {
+char* transposition_encrypt(char* text, char* key) {
     int qt_lines = (int) ceil( (double)strlen(text) / strlen(key));
     char table[qt_lines][strlen(key)];
-    int* pos_vector = NULL;
-    int i, j, k = 0, menor, len = 0;
+    int i, j, k = 0, len = 0;
     char alpha = 'a';
     char* encrypted = NULL;
 
@@ -68,9 +92,9 @@ char* transposition(char* text, char* key) {
         }
     }
 
-    print_table(table, key, qt_lines);
-
     pos_vector = key_order(key);
+
+    print_table(table, key, qt_lines);
 
     for (i = 0; i < strlen(key); i++) {
         for (j = 0; j < qt_lines; j++) {
@@ -82,36 +106,33 @@ char* transposition(char* text, char* key) {
     return encrypted;
 }
 
-int* key_order(char* key) {
-    int pos_vector[strlen(key)];
-    int i, j, menor;
-    for (i = 0; i < strlen(key); i++) {
-        for (j = 0; j < strlen(key); j++) {
-            if (j == 0)
-                menor = j;
-            else
-                if (key[j] < key[menor])
-                    menor = j;
-        }
-        pos_vector[i] = menor;
-        key[menor] = 126; //pra impedir que seja escolhido novamente como o menor
-    }
-}
-
-char* decrypt(char* text, char* key) {
-    int i, j, k = 0;
+/*
+ * Recebe um texto criptografado e a respectiva chave de criptografia.
+ * Retorna uma string com o conteudo de toda a tabela de transposicao, na sequencia legível.
+ * */
+char* transposition_decrypt(char* text, char* key) {
+    int i, j, k = 0, l = 0;
     int qt_lines = strlen(text)/strlen(key);
     char table[qt_lines][strlen(key)];
-
-    int* pos_vector = key_order(key);
+    char* decrypted = NULL;
 
     for (i = 0; i < strlen(key); i++) {
         for (j = 0; j < qt_lines; j++) {
-            table[j][pos_vector[i]] = text[k++];
+            if (k < strlen(text))
+                table[j][pos_vector[i]] = text[k++];
         }
     }
 
-    print_table(table, key, qt_lines);
+    decrypted = (char *)realloc(decrypted, sizeof(char) * (k + 1));
+    for (i = 0; i < qt_lines; i++) {
+        for (j = 0; j < strlen(key); j++) {
+            if (l <= k)
+                decrypted[l++] = table[i][j];
+        }
+    }
+    decrypted[k] = '\0';
+
+    return decrypted;
 }
 
 /*
@@ -158,9 +179,15 @@ int main(void) {
     text = remove_spaces(cleartext);
 
     //criptografa com a cifra de transposição
-    text = transposition(text, key);
+    text = transposition_encrypt(text, key);
 
-    printf("\n-- Texto criptografado com a cifra de transposição: --\n");
+    printf("\nTexto criptografado com a cifra de transposição: \n");
+    printf("%s\n", text);
+
+    //descriptografa novamente
+    text = transposition_decrypt(text, key);
+
+    printf("\nTexto novamente descriptografado: \n");
     printf("%s\n", text);
 
     free(text);

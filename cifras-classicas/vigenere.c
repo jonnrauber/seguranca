@@ -127,7 +127,7 @@ int main(void) {
     //criptografa com a cifra de vigenere
     text = vigenere_encrypt(cleartext, key);
 
-    printf("-- Texto criptografado em cifra de Vigenere: --\n");
+    printf("\nTexto criptografado em cifra de Vigenere: \n");
     printf("%s\n", text);
 
     //descriptografa novamente
