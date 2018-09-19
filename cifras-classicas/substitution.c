@@ -25,6 +25,9 @@
 
 #define MAX_LEN 9999
 
+char alphabet[] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','\0'};
+char* new_alphabet = NULL;
+
 /*
  * Altera um caractere dada sua posição no alfabeto de origem e a correspondência
  * com o símbolo criptografado.
@@ -75,9 +78,7 @@ void print_alphabets(char* alphabet, char* new_alphabet) {
  * Recebe um texto e uma chave e criptografa, fazendo a substituição caractere
  * por caractere.
  * */
-char* substitution(char* text, char* key) {
-    char alphabet[] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','\0'};
-    char* new_alphabet = NULL;
+char* substitution_encrypt(char* text, char* key) {
     char* encrypted = NULL;
     int i, len = 0;
 
@@ -116,8 +117,23 @@ char* substitution(char* text, char* key) {
         encrypted[i] = change_character(text[i], alphabet, new_alphabet);
     }
 
-    free(new_alphabet);
     return encrypted;
+}
+
+/*
+ * Recebe um texto criptografado e a respectiva chave de criptografia.
+ * Retorna o texto claro original.
+ * */
+char* substitution_decrypt(char* text, char* key) {
+    char* decrypted = NULL;
+    int i;
+    decrypted = (char *)realloc(decrypted, sizeof(char) * strlen(text));
+
+    for (i = 0; i < strlen(text); i++) {
+        decrypted[i] = change_character(text[i], new_alphabet, alphabet);
+    }
+
+    return decrypted;
 }
 
 /*
@@ -144,12 +160,19 @@ int main(void) {
     read(key);
 
     //criptografa com a cifra de transposição
-    text = substitution(cleartext, key);
+    text = substitution_encrypt(cleartext, key);
 
-    printf("\n-- Texto criptografado com a cifra de substituição: --\n");
+    printf("\nTexto criptografado com a cifra de substituição: \n");
+    printf("%s\n", text);
+
+    //descriptografa novamente
+    text = substitution_decrypt(text, key);
+
+    printf("\nTexto novamente descriptografado: \n");
     printf("%s\n", text);
 
     free(text);
+    free(new_alphabet);
 
     return 0;
 }
